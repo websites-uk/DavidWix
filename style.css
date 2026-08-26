@@ -264,6 +264,17 @@ opacity:1;
 transform:none;
 }
 
+.cursor{
+width:18px;
+height:18px;
+border:2px solid #4ea1ff;
+border-radius:50%;
+position:fixed;
+pointer-events:none;
+z-index:9999;
+transition:transform .08s linear;
+}
+
 @media(max-width:768px){
 
 .profile-card{
