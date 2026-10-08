@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://website-page.github.io/davidwix-page/sitemap.xml
+Sitemap: https://davidwix-page.vercel.app/sitemap.xml
