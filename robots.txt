@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://websites-uk.github.io/DavidWix/sitemap.xml
+Sitemap: https://website-page.github.io/davidwix-page/sitemap.xml
