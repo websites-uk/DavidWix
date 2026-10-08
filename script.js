@@ -38,3 +38,11 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
+
+
+// Premium entrance animation
+window.addEventListener("load", () => {
+  const loader = document.querySelector(".site-loader");
+  if (!loader) return;
+  setTimeout(() => loader.classList.add("loaded"), 650);
+});
