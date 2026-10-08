@@ -1,93 +1,40 @@
-// Reveal animation
-// Reveal animation
+const nav = document.querySelector(".nav");
+const menuToggle = document.querySelector(".menu-toggle");
+const revealItems = document.querySelectorAll(".reveal");
 
-const reveals=document.querySelectorAll('.reveal');
+window.addEventListener("scroll", () => {
+  nav.classList.toggle("scrolled", window.scrollY > 20);
+}, { passive: true });
 
-const observer=new IntersectionObserver(entries=>{
-
-entries.forEach(entry=>{
-
-if(entry.isIntersecting){
-
-entry.target.classList.add('active');
-
-}
-
+menuToggle?.addEventListener("click", () => {
+  const open = nav.classList.toggle("open");
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
 });
 
-},{threshold:.2});
-
-reveals.forEach(r=>observer.observe(r));
-
-
-// Animated counters
-
-const counters=document.querySelectorAll('[data-target]');
-
-const speed=200;
-
-const counterObserver=new IntersectionObserver(entries=>{
-
-entries.forEach(entry=>{
-
-if(!entry.isIntersecting) return;
-
-const counter=entry.target;
-
-const target=+counter.dataset.target;
-
-const update=()=>{
-
-const current=+counter.innerText;
-
-const increment=Math.ceil(target/25);
-
-if(current<target){
-
-counter.innerText=current+increment;
-
-requestAnimationFrame(update);
-
-}else{
-
-counter.innerText=target+"%";
-
-}
-
-};
-
-update();
-
-counterObserver.unobserve(counter);
-
+document.querySelectorAll(".nav-links a").forEach(link => {
+  link.addEventListener("click", () => {
+    nav.classList.remove("open");
+    menuToggle?.setAttribute("aria-expanded", "false");
+  });
 });
 
-});
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
 
-counters.forEach(c=>counterObserver.observe(c));
+revealItems.forEach(item => observer.observe(item));
 
-
-// Custom cursor
-
-const cursor=document.querySelector('.cursor');
-
-window.addEventListener('mousemove',e=>{
-
-cursor.style.left=e.clientX+'px';
-
-cursor.style.top=e.clientY+'px';
-
-});
-
-
-// Navbar blur on scroll
-
-const nav=document.querySelector('nav');
-
-window.addEventListener('scroll',()=>{
-
-nav.style.background=window.scrollY>50
-? '#050505dd'
-: '#00000070';
-
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener("click", event => {
+    const target = document.querySelector(link.getAttribute("href"));
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 });
