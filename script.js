@@ -41,8 +41,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 
 
 // Premium entrance animation
-window.addEventListener("load", () => {
+window.addEventListener("DOMContentLoaded", () => {
   const loader = document.querySelector(".site-loader");
   if (!loader) return;
-  setTimeout(() => loader.classList.add("loaded"), 650);
+  setTimeout(() => loader.classList.add("loaded"), 220);
 });
