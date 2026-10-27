@@ -48,38 +48,71 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// One-time carousel hint: gently slide each category and return to the start
-// when it first enters view, showing visitors that the row can be swiped.
-const carouselHintObserver = new IntersectionObserver((entries, observer) => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    const category = entry.target;
-    observer.unobserve(category);
-    const track = category.querySelector(".project-carousel");
-    if (!track || track.dataset.hintShown === "true") return;
-    track.dataset.hintShown = "true";
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+// Repeating carousel hint: slide forward and return every 2.5 seconds
+// while the category is visible, until the visitor interacts manually.
+document.querySelectorAll(".work-category").forEach(category => {
+  const track = category.querySelector(".project-carousel");
+  const prev = category.querySelector(".carousel-prev");
+  const next = category.querySelector(".carousel-next");
+  if (!track) return;
 
-    let userInteracted = false;
-    const stopHint = () => { userInteracted = true; };
-    track.addEventListener("pointerdown", stopHint, { once: true, passive: true });
-    track.addEventListener("touchstart", stopHint, { once: true, passive: true });
-    track.addEventListener("keydown", stopHint, { once: true });
+  let hintTimer = null;
+  let returnTimer = null;
+  let stoppedByUser = false;
+  let nudging = false;
 
-    window.setTimeout(() => {
-      if (userInteracted || track.scrollWidth <= track.clientWidth) return;
-      const start = track.scrollLeft;
-      const card = track.querySelector(".carousel-card");
-      const nudge = Math.min(card ? card.getBoundingClientRect().width * 0.42 : 120, 180);
-      track.scrollTo({ left: start + nudge, behavior: "smooth" });
-      window.setTimeout(() => {
-        if (!userInteracted) track.scrollTo({ left: start, behavior: "smooth" });
-      }, 700);
-    }, 450);
+  const stopHint = () => {
+    stoppedByUser = true;
+    if (hintTimer) window.clearInterval(hintTimer);
+    if (returnTimer) window.clearTimeout(returnTimer);
+    hintTimer = null;
+    returnTimer = null;
+  };
+
+  ["pointerdown", "touchstart", "wheel", "keydown"].forEach(type => {
+    track.addEventListener(type, stopHint, { passive: type !== "keydown", once: true });
   });
-}, { threshold: 0.35 });
+  prev?.addEventListener("click", stopHint, { once: true });
+  next?.addEventListener("click", stopHint, { once: true });
 
-document.querySelectorAll(".work-category").forEach(category => carouselHintObserver.observe(category));
+  const hint = () => {
+    if (stoppedByUser || nudging || track.scrollWidth <= track.clientWidth + 4) return;
+    const start = track.scrollLeft;
+    const card = track.querySelector(".carousel-card");
+    const styles = window.getComputedStyle(track);
+    const gap = parseFloat(styles.columnGap || styles.gap) || 0;
+    const nudge = Math.min((card ? card.getBoundingClientRect().width + gap : 120) * 0.42, 180);
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+    if (maxScroll <= 4) return;
+    nudging = true;
+    track.scrollTo({ left: Math.min(start + nudge, maxScroll), behavior: "smooth" });
+    returnTimer = window.setTimeout(() => {
+      if (!stoppedByUser) track.scrollTo({ left: start, behavior: "smooth" });
+      nudging = false;
+    }, 700);
+  };
+
+  const hintObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (stoppedByUser) return;
+      if (entry.isIntersecting) {
+        if (!hintTimer && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          window.setTimeout(() => {
+            if (!stoppedByUser && !hintTimer) hint();
+          }, 500);
+          hintTimer = window.setInterval(hint, 2500);
+        }
+      } else {
+        if (hintTimer) window.clearInterval(hintTimer);
+        hintTimer = null;
+        if (returnTimer) window.clearTimeout(returnTimer);
+        returnTimer = null;
+        nudging = false;
+      }
+    });
+  }, { threshold: 0.25 });
+  hintObserver.observe(category);
+});
 
 // Horizontal project carousels: mouse, keyboard, touch and desktop arrow controls
 document.querySelectorAll(".work-category").forEach(category => {
