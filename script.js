@@ -40,12 +40,23 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 });
 
 
-// Premium entrance animation
-window.addEventListener("DOMContentLoaded", () => {
-  const loader = document.querySelector(".site-loader");
-  if (!loader) return;
-  setTimeout(() => loader.classList.add("loaded"), 2000);
-});
+// Premium entrance animation: dismiss quickly and never get stuck if this script runs late.
+(() => {
+  const hideLoader = () => {
+    const loader = document.querySelector(".site-loader");
+    if (!loader || loader.classList.contains("loaded")) return;
+    window.setTimeout(() => loader.classList.add("loaded"), 900);
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", hideLoader, { once: true });
+  } else {
+    hideLoader();
+  }
+  // Safety fallback in case DOM readiness events are delayed or missed.
+  window.setTimeout(() => {
+    document.querySelector(".site-loader")?.classList.add("loaded");
+  }, 2200);
+})();
 
 
 // Repeating carousel hint: slide forward and return every 2.5 seconds
