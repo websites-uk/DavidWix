@@ -158,3 +158,93 @@ document.querySelectorAll(".work-category").forEach(category => {
   window.addEventListener("resize", updateControls, { passive: true });
   updateControls();
 });
+
+
+// Cinematic graphic rail: seamless loop, click-to-pause, drag/swipe and keyboard navigation.
+(() => {
+  const rail = document.querySelector("#graphics-rail");
+  const track = rail?.querySelector(".graphics-track");
+  const status = document.querySelector("#graphics-rail-status");
+  if (!rail || !track) return;
+
+  // Duplicate the artwork once so the right-to-left loop has no empty gap.
+  if (!track.dataset.loopReady) {
+    Array.from(track.children).forEach(card => {
+      const clone = card.cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      clone.querySelectorAll("img").forEach(img => img.setAttribute("alt", ""));
+      track.appendChild(clone);
+    });
+    track.dataset.loopReady = "true";
+  }
+
+  let paused = false;
+  let dragging = false;
+  let startX = 0;
+  let startScroll = 0;
+  let moved = false;
+
+  const updateStatus = () => {
+    if (status) status.textContent = paused ? "MOTION PAUSED · CLICK TO RESUME" : "AUTOPLAY ACTIVE · CLICK TO PAUSE";
+    rail.classList.toggle("is-paused", paused);
+    rail.setAttribute("aria-label", paused
+      ? "Graphic design gallery paused. Click to resume or drag to explore."
+      : "Cinematic graphic design gallery. Click to pause or resume. Use arrow keys or drag to explore.");
+  };
+
+  rail.addEventListener("click", event => {
+    if (moved) { moved = false; return; }
+    if (event.target.closest("a, button")) return;
+    paused = !paused;
+    updateStatus();
+  });
+
+  rail.addEventListener("pointerdown", event => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragging = true;
+    moved = false;
+    startX = event.clientX;
+    startScroll = rail.scrollLeft;
+    rail.classList.add("is-dragging", "is-paused");
+    rail.setPointerCapture?.(event.pointerId);
+  });
+  rail.addEventListener("pointermove", event => {
+    if (!dragging) return;
+    const delta = event.clientX - startX;
+    if (Math.abs(delta) > 5) moved = true;
+    if (moved) {
+      paused = true;
+      rail.scrollLeft = startScroll - delta;
+      updateStatus();
+    }
+  });
+  const finishDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    rail.classList.remove("is-dragging");
+    if (moved) {
+      paused = true;
+      updateStatus();
+      window.setTimeout(() => { moved = false; }, 0);
+    }
+  };
+  rail.addEventListener("pointerup", finishDrag);
+  rail.addEventListener("pointercancel", finishDrag);
+  rail.addEventListener("lostpointercapture", finishDrag);
+
+  rail.addEventListener("keydown", event => {
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      paused = true;
+      rail.scrollBy({ left: event.key === "ArrowRight" ? 320 : -320, behavior: "smooth" });
+      updateStatus();
+    } else if (event.key === " " || event.key === "Enter") {
+      event.preventDefault();
+      paused = !paused;
+      updateStatus();
+    }
+  });
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) paused = true;
+  updateStatus();
+})();
