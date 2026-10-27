@@ -40,22 +40,22 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 });
 
 
-// Premium entrance animation: dismiss quickly and never get stuck if this script runs late.
+// Premium entrance animation: keep the intro polished, but brief and reliable.
 (() => {
-  const hideLoader = () => {
+  const revealPage = () => {
     const loader = document.querySelector(".site-loader");
     if (!loader || loader.classList.contains("loaded")) return;
-    window.setTimeout(() => loader.classList.add("loaded"), 900);
+    window.setTimeout(() => loader.classList.add("loaded"), 1250);
   };
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", hideLoader, { once: true });
+    document.addEventListener("DOMContentLoaded", revealPage, { once: true });
   } else {
-    hideLoader();
+    revealPage();
   }
-  // Safety fallback in case DOM readiness events are delayed or missed.
+  // Failsafe: never let the intro overlay block the site for long.
   window.setTimeout(() => {
     document.querySelector(".site-loader")?.classList.add("loaded");
-  }, 2200);
+  }, 2500);
 })();
 
 
