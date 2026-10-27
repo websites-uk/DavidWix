@@ -44,7 +44,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 window.addEventListener("DOMContentLoaded", () => {
   const loader = document.querySelector(".site-loader");
   if (!loader) return;
-  setTimeout(() => loader.classList.add("loaded"), 220);
+  setTimeout(() => loader.classList.add("loaded"), 2000);
 });
 
 
