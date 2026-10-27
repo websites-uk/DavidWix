@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://davewebdeveloper-page.vercel.app/sitemap.xml
+Sitemap: https://davewebdeveloper.vercel.app/sitemap.xml
