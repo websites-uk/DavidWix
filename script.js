@@ -248,3 +248,29 @@ document.querySelectorAll(".work-category").forEach(category => {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) paused = true;
   updateStatus();
 })();
+
+
+// Project preview performance: load external website iframes only as their cards approach view.
+(() => {
+  const frames = document.querySelectorAll(".project-preview iframe[data-src]");
+  if (!frames.length) return;
+  const loadFrame = frame => {
+    if (!frame.dataset.src || frame.dataset.loaded === "true") return;
+    frame.dataset.loaded = "true";
+    frame.src = frame.dataset.src;
+    frame.removeAttribute("data-src");
+  };
+  if (!("IntersectionObserver" in window)) {
+    frames.forEach(loadFrame);
+    return;
+  }
+  const previewObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadFrame(entry.target);
+        previewObserver.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: "350px 0px", threshold: 0.01 });
+  frames.forEach(frame => previewObserver.observe(frame));
+})();
