@@ -40,24 +40,24 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 });
 
 
-// Premium entrance animation: keep the intro polished, but brief and reliable.
+// Four-second branded intro, with an immediate failsafe if the page script is delayed.
 (() => {
-  const revealPage = () => {
+  const startedAt = performance.now();
+  const finishLoader = () => {
     const loader = document.querySelector(".site-loader");
     if (!loader || loader.classList.contains("loaded")) return;
-    window.setTimeout(() => loader.classList.add("loaded"), 1250);
+    const remaining = Math.max(0, 4000 - (performance.now() - startedAt));
+    window.setTimeout(() => loader.classList.add("loaded"), remaining);
   };
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", revealPage, { once: true });
+    document.addEventListener("DOMContentLoaded", finishLoader, { once: true });
   } else {
-    revealPage();
+    finishLoader();
   }
-  // Failsafe: never let the intro overlay block the site for long.
   window.setTimeout(() => {
     document.querySelector(".site-loader")?.classList.add("loaded");
-  }, 2500);
+  }, 4500);
 })();
-
 
 // Repeating carousel hint: slide forward and return every 2.5 seconds
 // while the category is visible, until the visitor interacts manually.
@@ -282,6 +282,6 @@ document.querySelectorAll(".work-category").forEach(category => {
         previewObserver.unobserve(entry.target);
       }
     });
-  }, { rootMargin: "350px 0px", threshold: 0.01 });
+  }, { rootMargin: "100px 0px", threshold: 0.01 });
   frames.forEach(frame => previewObserver.observe(frame));
 })();
