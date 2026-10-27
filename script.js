@@ -48,6 +48,39 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
+// One-time carousel hint: gently slide each category and return to the start
+// when it first enters view, showing visitors that the row can be swiped.
+const carouselHintObserver = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const category = entry.target;
+    observer.unobserve(category);
+    const track = category.querySelector(".project-carousel");
+    if (!track || track.dataset.hintShown === "true") return;
+    track.dataset.hintShown = "true";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let userInteracted = false;
+    const stopHint = () => { userInteracted = true; };
+    track.addEventListener("pointerdown", stopHint, { once: true, passive: true });
+    track.addEventListener("touchstart", stopHint, { once: true, passive: true });
+    track.addEventListener("keydown", stopHint, { once: true });
+
+    window.setTimeout(() => {
+      if (userInteracted || track.scrollWidth <= track.clientWidth) return;
+      const start = track.scrollLeft;
+      const card = track.querySelector(".carousel-card");
+      const nudge = Math.min(card ? card.getBoundingClientRect().width * 0.42 : 120, 180);
+      track.scrollTo({ left: start + nudge, behavior: "smooth" });
+      window.setTimeout(() => {
+        if (!userInteracted) track.scrollTo({ left: start, behavior: "smooth" });
+      }, 700);
+    }, 450);
+  });
+}, { threshold: 0.35 });
+
+document.querySelectorAll(".work-category").forEach(category => carouselHintObserver.observe(category));
+
 // Horizontal project carousels: mouse, keyboard, touch and desktop arrow controls
 document.querySelectorAll(".work-category").forEach(category => {
   const track = category.querySelector(".project-carousel");
