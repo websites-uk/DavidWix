@@ -40,24 +40,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 });
 
 
-// Four-second branded intro, with an immediate failsafe if the page script is delayed.
-(() => {
-  const startedAt = performance.now();
-  const finishLoader = () => {
-    const loader = document.querySelector(".site-loader");
-    if (!loader || loader.classList.contains("loaded")) return;
-    const remaining = Math.max(0, 4000 - (performance.now() - startedAt));
-    window.setTimeout(() => loader.classList.add("loaded"), remaining);
-  };
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", finishLoader, { once: true });
-  } else {
-    finishLoader();
-  }
-  window.setTimeout(() => {
-    document.querySelector(".site-loader")?.classList.add("loaded");
-  }, 4500);
-})();
 
 // Repeating carousel hint: slide forward and return every 2.5 seconds
 // while the category is visible, until the visitor interacts manually.
