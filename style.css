@@ -278,3 +278,30 @@ footer{max-width:var(--max);margin:auto;padding:28px 5vw;display:grid;grid-templ
 .cover-malaysia{background-image:linear-gradient(180deg,rgba(20,15,7,.08),rgba(13,10,5,.82)),url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=85');background-position:center 50%}
 .preview-cover:after{z-index:-1;mix-blend-mode:screen}
 .preview-cover strong,.preview-cover small,.preview-cover .cover-index,.preview-cover .cover-open{ text-shadow:0 2px 18px rgba(0,0,0,.55)}
+
+
+/* Harvey Wizard: podcast-led mentorship preview with a visible studio microphone. */
+.cover-harvey{
+  background-image:linear-gradient(180deg,rgba(15,10,5,.08),rgba(12,8,3,.82)),url('https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1400&q=85');
+  background-size:cover;background-position:center 48%;
+}
+.cover-harvey:after{
+  width:34%;aspect-ratio:1;border:1px solid rgba(255,224,150,.58);
+  border-radius:50%;box-shadow:0 0 0 18px rgba(255,224,150,.09),0 0 42px rgba(255,196,91,.18);
+}
+.cover-harvey strong{font-size:clamp(26px,4vw,56px);text-shadow:0 3px 25px rgba(0,0,0,.8)}
+
+/* Sculptural Lighting Studio: warm, gallery-like lighting and a sculptural lamp focal point. */
+.cover-lamp{
+  background-image:linear-gradient(180deg,rgba(10,12,17,.08),rgba(7,9,14,.78)),url('https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=1400&q=85');
+  background-size:cover;background-position:center 52%;color:#fff8e8;
+}
+.cover-lamp:after{
+  width:42%;aspect-ratio:1;border-radius:50%;
+  border:1px solid rgba(255,225,156,.72);
+  box-shadow:0 0 35px rgba(255,205,105,.22),0 0 0 24px rgba(255,225,156,.08),0 0 0 48px rgba(255,225,156,.04);
+}
+.cover-lamp strong{font-size:clamp(26px,4.2vw,58px);font-weight:600;letter-spacing:-.055em}
+.cover-lamp strong{color:#fff8e8}
+.cover-lamp small{color:rgba(255,248,232,.82)}
+.cover-lamp .cover-open{color:#ffe09a}
