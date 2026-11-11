@@ -378,3 +378,18 @@ footer{max-width:var(--max);margin:auto;padding:28px 5vw;display:grid;grid-templ
 @media(max-width:900px){.growth-hero{grid-template-columns:1fr;gap:45px}.growth-visual{height:420px;max-width:650px;width:100%;margin:auto}.growth-service-grid{grid-template-columns:repeat(2,1fr)}.growth-services-head{margin-top:80px}}
 @media(max-width:600px){.growth-vault{padding:95px 22px}.growth-hero h2{font-size:48px}.growth-visual{height:330px}.growth-panel{width:88%;padding:18px}.growth-panel-title{font-size:23px;margin:25px 0 18px}.growth-chart{height:95px}.growth-orb-one{right:0;width:48px;height:48px}.growth-orb-two{left:0;width:43px;height:43px}.growth-services-head{display:block;margin-top:75px}.growth-services-head>p{margin-top:15px}.growth-service-grid{grid-template-columns:1fr;gap:12px}.growth-service-card{min-height:300px;padding:21px}.growth-service-card p{min-height:0}.growth-note{display:block}.growth-note p{margin-top:12px}}
 @media(prefers-reduced-motion:reduce){.growth-orb-one,.growth-orb-two{animation:none}.growth-service-card,.growth-3d-icon{transition:none}}
+
+
+/* Other Services — cinematic platform brand marks */
+.growth-service-card h4{font-weight:800;color:#fff;line-height:1.25;text-wrap:balance}
+.brand-logo-icon{animation:brandLogoFloat 4.8s ease-in-out infinite}
+.brand-logo-icon:before{width:72px;height:72px;border-radius:23px;border:1px solid rgba(255,255,255,.2);box-shadow:inset 0 1px 1px rgba(255,255,255,.35),0 15px 28px rgba(0,0,0,.35)}
+.brand-logo-icon i{position:relative;z-index:2;font-size:49px;line-height:1;filter:drop-shadow(0 5px 3px rgba(0,0,0,.35))}
+.icon-telegram:before{background:linear-gradient(145deg,#55c9f5 0%,#168bc5 48%,#07517f 100%)}
+.icon-telegram i{color:#fff;text-shadow:0 2px 0 rgba(0,54,94,.4),0 0 22px rgba(111,220,255,.5)}
+.icon-tiktok-logo:before{background:linear-gradient(145deg,#34343d 0%,#15151b 55%,#08090d 100%)}
+.icon-tiktok-logo i{color:#fff;text-shadow:-4px 3px 0 #25f4ee,4px -3px 0 #fe2c55,0 8px 18px rgba(0,0,0,.55)}
+.icon-youtube-logo:before{background:linear-gradient(145deg,#ff7777 0%,#e62117 48%,#8f0909 100%)}
+.icon-youtube-logo i{font-size:46px;color:#fff;text-shadow:0 3px 0 rgba(100,0,0,.4),0 0 20px rgba(255,80,80,.5)}
+@keyframes brandLogoFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+@media(prefers-reduced-motion:reduce){.brand-logo-icon{animation:none}}
