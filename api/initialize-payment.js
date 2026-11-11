@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !Array.isArray(items) || !items.length || items.length > 2) {
     return res.status(400).json({ error: "Please provide a valid email and course selection." });
   }
-  if (!["NGN", "USD", "EUR", "GBP"].includes(currency)) return res.status(400).json({ error: "Please choose NGN, USD, EUR or GBP. AUD checkout is not currently supported." });
+  if (!["NGN", "USD", "EUR", "GBP", "AED"].includes(currency)) return res.status(400).json({ error: "Please choose NGN, USD, EUR, GBP or AED." });
   const prices = { frontend: 25, "3d": 35, bundle: 50 };
   const names = { frontend: "Front-End Web Development for Beginners", "3d": "3D Website Design & Client Acquisition", bundle: "Complete Learning Bundle" };
   if (items.includes("bundle") && items.length !== 1) return res.status(400).json({ error: "The bundle cannot be combined with individual courses." });
