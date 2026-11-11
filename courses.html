@@ -94,7 +94,10 @@ checkout.addEventListener("click",async()=>{
  try{
   const response=await fetch("/api/initialize-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,items:cart,currency})});
   const data=await response.json();
-  if(!response.ok||!data.checkout_url)throw new Error(data.error||"Checkout could not be started.");
+  if(!response.ok||!data.checkout_url){
+   const details=[data.error,data.detail,data.providerCode?("Code: "+data.providerCode):"",data.httpStatus?("HTTP "+data.httpStatus):""].filter(Boolean).join(" — ");
+   throw new Error(details||"Checkout could not be started.");
+  }
   window.location.assign(data.checkout_url);
  }catch(error){status.textContent=error.message||"Something went wrong. Please try again.";render()}
 });
