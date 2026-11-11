@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#090909"><title>Payment status | David Wix</title>
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090909;color:#f7f7f4;font:16px/1.6 Arial,sans-serif}.card{width:min(520px,88%);padding:36px;border:1px solid #333;background:#121212}h1{font-size:32px;line-height:1.1}.muted{color:#aaa}.status{color:#d8ff4f}.link{display:inline-block;margin-top:18px;padding:12px 18px;background:#d8ff4f;color:#090909;text-decoration:none;font-weight:bold}</style></head>
-<body><main class="card"><p class="status">DAVID WIX · COURSE CHECKOUT</p><h1 id="title">Checking your payment…</h1><p id="message" class="muted">Please wait while we confirm the transaction with Flutterwave.</p><a class="link" href="/courses.html">Back to courses</a></main>
+<style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090909;color:#f7f7f4;font:16px/1.6 Arial,sans-serif;padding:24px}.card{width:min(560px,100%);padding:36px;border:1px solid #333;background:#121212}h1{font-size:32px;line-height:1.1}.muted{color:#aaa}.status{color:#d8ff4f;font-size:11px;letter-spacing:.16em}.link{display:inline-block;margin:10px 10px 0 0;padding:12px 18px;background:#d8ff4f;color:#090909;text-decoration:none;font-weight:bold}.downloads{display:grid;gap:12px;margin-top:22px}.downloads a{display:block;padding:15px;border:1px solid #555;color:#fff;text-decoration:none}.downloads a:hover{border-color:#d8ff4f}.hidden{display:none}</style></head>
+<body><main class="card"><p class="status">DAVID WIX · COURSE CHECKOUT</p><h1 id="title">Checking your payment…</h1><p id="message" class="muted">Please wait while we confirm the transaction with Flutterwave.</p><div id="downloads" class="downloads hidden"></div><a class="link" href="/courses.html">Back to courses</a></main>
 <script>
 (async()=>{
- const params=new URLSearchParams(location.search),id=params.get("transaction_id");
- const title=document.querySelector("#title"),message=document.querySelector("#message");
- if(!id){title.textContent="Payment not confirmed";message.textContent="No transaction reference was provided. If you completed payment, contact support with your Flutterwave transaction reference.";return}
+ const id=new URLSearchParams(location.search).get("transaction_id");
+ const email=sessionStorage.getItem("dw_course_checkout_email")||"";
+ const title=document.querySelector("#title"),message=document.querySelector("#message"),downloads=document.querySelector("#downloads");
+ if(!id){title.textContent="Payment not confirmed";message.textContent="No transaction reference was provided. If you completed payment, keep your Flutterwave receipt and contact support.";return}
+ if(!email){title.textContent="Email confirmation needed";message.textContent="Return to the course page and contact support using the same email entered at checkout. Keep your Flutterwave receipt.";return}
  try{
-  const response=await fetch("/api/verify-payment?transaction_id="+encodeURIComponent(id)),data=await response.json();
+  const response=await fetch("/api/verify-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({transaction_id:id,email})});
+  const data=await response.json();
   if(!response.ok||!data.paid)throw new Error(data.error||"Payment could not be verified.");
   title.textContent="Payment verified";
-  const amount=data.currency==="NGN"?new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:2}).format(data.amount):new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(data.amount);
-  message.textContent="Flutterwave confirms a successful payment of "+amount+". Course download access is not yet activated; please contact support to receive the course files.";
+  const amount=new Intl.NumberFormat(data.currency==="NGN"?"en-NG":"en-US",{style:"currency",currency:data.currency,maximumFractionDigits:data.currency==="NGN"?0:2}).format(data.amount);
+  message.textContent="Flutterwave confirms your payment of "+amount+". Your private course downloads are ready below.";
+  const labels={frontend:"Download: Front-End Web Development for Beginners","3d":"Download: 3D Website Design & Client Acquisition"};
+  data.courses.forEach(course=>{const a=document.createElement("a");a.href="/api/course-download?course="+encodeURIComponent(course)+"&token="+encodeURIComponent(data.download_token);a.textContent=labels[course]||"Download course PDF";downloads.append(a)});
+  downloads.classList.remove("hidden");
+  sessionStorage.removeItem("dw_course_checkout_email");
  }catch(error){title.textContent="Payment not confirmed";message.textContent=error.message+" If you were charged, keep your Flutterwave receipt and contact support."}
 })();
 </script></body></html>
