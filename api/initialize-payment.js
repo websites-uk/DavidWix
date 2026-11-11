@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !Array.isArray(items) || !items.length || items.length > 2) {
     return res.status(400).json({ error: "Please provide a valid email and course selection." });
   }
-  if (!["NGN", "USD"].includes(currency)) return res.status(400).json({ error: "Please choose NGN or USD." });
+  if (!["NGN", "USD", "EUR", "GBP"].includes(currency)) return res.status(400).json({ error: "Please choose NGN, USD, EUR or GBP. AUD checkout is not currently supported." });
   const prices = { frontend: 25, "3d": 35, bundle: 50 };
   const names = { frontend: "Front-End Web Development for Beginners", "3d": "3D Website Design & Client Acquisition", bundle: "Complete Learning Bundle" };
   if (items.includes("bundle") && items.length !== 1) return res.status(400).json({ error: "The bundle cannot be combined with individual courses." });
@@ -17,14 +17,14 @@ export default async function handler(req, res) {
   let fxRate = 1;
   let amount = baseAmount;
   try {
-    if (currency === "NGN") {
+    if (currency !== "USD") {
       const rateResponse = await fetch("https://open.er-api.com/v6/latest/USD");
       const rateData = await rateResponse.json();
-      fxRate = Number(rateData?.rates?.NGN);
+      fxRate = Number(rateData?.rates?.[currency]);
       if (!rateResponse.ok || rateData?.result !== "success" || !Number.isFinite(fxRate) || fxRate <= 0) {
         return res.status(503).json({ error: "The Naira conversion rate is temporarily unavailable. Please try again." });
       }
-      amount = Math.round(baseAmount * fxRate);
+      amount = currency === "NGN" ? Math.round(baseAmount * fxRate) : Math.round(baseAmount * fxRate * 100) / 100;
     }
     const tx_ref = "DW-" + crypto.randomUUID();
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
