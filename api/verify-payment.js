@@ -9,14 +9,23 @@ export default async function handler(req, res) {
       headers: { Authorization: "Bearer " + secret }
     });
     const result = await response.json();
-    if (!response.ok || result.status !== "success" || result.data?.status !== "successful" || result.data?.currency !== "USD") {
-      return res.status(400).json({ paid: false, error: "Payment could not be verified." });
+    const payment = result?.data;
+    const meta = payment?.meta || {};
+    const currency = meta.currency;
+    const expectedAmount = Number(meta.expected_amount);
+    const items = meta.course_items;
+    if (!response.ok || result.status !== "success" || payment?.status !== "successful" ||
+        !["NGN", "USD"].includes(currency) || payment.currency !== currency ||
+        !Number.isFinite(expectedAmount) || Number(payment.amount) !== expectedAmount ||
+        !Array.isArray(items) || !items.length ||
+        (currency === "USD" && ![25, 35, 50].includes(expectedAmount)) ||
+        (currency === "NGN" && ![25, 35, 50].includes(Number(meta.base_amount_usd)))) {
+      return res.status(400).json({ paid: false, error: "Payment could not be verified against the expected course order." });
     }
-    const amount = Number(result.data.amount);
-    if (![25, 35, 50].includes(amount) || Number(result.data.charged_amount) < amount) {
-      return res.status(400).json({ paid: false, error: "The verified payment amount does not match a course price." });
+    if (Number(payment.charged_amount) < expectedAmount) {
+      return res.status(400).json({ paid: false, error: "The verified payment amount does not match the course price." });
     }
-    return res.status(200).json({ paid: true, amount, currency: "USD", message: "Payment verified. Course delivery still needs to be connected." });
+    return res.status(200).json({ paid: true, amount: expectedAmount, currency, message: "Payment verified. Course delivery still needs to be connected." });
   } catch {
     return res.status(502).json({ paid: false, error: "Unable to verify payment right now." });
   }
