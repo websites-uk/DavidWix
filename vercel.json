@@ -10,6 +10,10 @@
     {
       "source": "/courses",
       "destination": "/courses.html"
+    },
+    {
+      "source": "/terms-of-use",
+      "destination": "/terms-of-use.html"
     }
   ]
 }
