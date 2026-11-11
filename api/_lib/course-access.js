@@ -24,8 +24,8 @@ export function expectedBaseAmount(items) {
 export async function verifyFlutterwaveTransaction(transactionId, email) {
   const secret = process.env.FLW_SECRET_KEY?.trim();
   if (!secret) throw new Error("Payment verification is not configured.");
-  if (!/^\\d+$/.test(String(transactionId || ""))) throw new Error("Missing or invalid transaction ID.");
-  if (typeof email !== "string" || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) throw new Error("Enter the email address used at checkout.");
+  if (!/^\d+$/.test(String(transactionId || ""))) throw new Error("Missing or invalid transaction ID.");
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(email)) throw new Error("Enter the email address used at checkout.");
 
   const response = await fetch("https://api.flutterwave.com/v3/transactions/" + encodeURIComponent(transactionId) + "/verify", {
     headers: { Authorization: "Bearer " + secret, Accept: "application/json" }
