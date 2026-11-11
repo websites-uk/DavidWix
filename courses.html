@@ -98,6 +98,7 @@ checkout.addEventListener("click",async()=>{
    const details=[data.error,data.detail,data.providerCode?("Code: "+data.providerCode):"",data.httpStatus?("HTTP "+data.httpStatus):""].filter(Boolean).join(" — ");
    throw new Error(details||"Checkout could not be started.");
   }
+  sessionStorage.setItem("dw_course_checkout_email",email.toLowerCase());
   window.location.assign(data.checkout_url);
  }catch(error){status.textContent=error.message||"Something went wrong. Please try again.";render()}
 });
