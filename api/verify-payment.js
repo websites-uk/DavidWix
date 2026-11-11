@@ -1,32 +1,20 @@
+import { createDownloadToken, verifyFlutterwaveTransaction } from "./_lib/course-access.js";
+
 export default async function handler(req, res) {
-  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
-  const secret = process.env.FLW_SECRET_KEY;
-  const transactionId = req.query.transaction_id;
-  if (!secret) return res.status(503).json({ error: "Payment verification is not configured." });
-  if (!transactionId || !/^\d+$/.test(String(transactionId))) return res.status(400).json({ error: "Missing transaction ID." });
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   try {
-    const response = await fetch("https://api.flutterwave.com/v3/transactions/" + encodeURIComponent(transactionId) + "/verify", {
-      headers: { Authorization: "Bearer " + secret }
+    const { transaction_id, email } = req.body || {};
+    const payment = await verifyFlutterwaveTransaction(transaction_id, email);
+    return res.status(200).json({
+      paid: true,
+      amount: payment.amount,
+      currency: payment.currency,
+      courses: payment.items.includes("bundle") ? ["frontend", "3d"] : payment.items,
+      download_token: createDownloadToken(payment),
+      message: "Payment verified. Your course downloads are ready."
     });
-    const result = await response.json();
-    const payment = result?.data;
-    const meta = payment?.meta || {};
-    const currency = meta.currency;
-    const expectedAmount = Number(meta.expected_amount);
-    const items = meta.course_items;
-    if (!response.ok || result.status !== "success" || payment?.status !== "successful" ||
-        !["NGN", "USD"].includes(currency) || payment.currency !== currency ||
-        !Number.isFinite(expectedAmount) || Number(payment.amount) !== expectedAmount ||
-        !Array.isArray(items) || !items.length ||
-        (currency === "USD" && ![25, 35, 50].includes(expectedAmount)) ||
-        (currency === "NGN" && ![25, 35, 50].includes(Number(meta.base_amount_usd)))) {
-      return res.status(400).json({ paid: false, error: "Payment could not be verified against the expected course order." });
-    }
-    if (Number(payment.charged_amount) < expectedAmount) {
-      return res.status(400).json({ paid: false, error: "The verified payment amount does not match the course price." });
-    }
-    return res.status(200).json({ paid: true, amount: expectedAmount, currency, message: "Payment verified. Course delivery still needs to be connected." });
-  } catch {
-    return res.status(502).json({ paid: false, error: "Unable to verify payment right now." });
+  } catch (error) {
+    const message = error?.message || "Unable to verify payment right now.";
+    return res.status(/not configured/i.test(message) ? 503 : 400).json({ paid: false, error: message });
   }
 }
