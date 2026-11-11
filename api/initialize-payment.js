@@ -32,7 +32,6 @@ export default async function handler(req, res) {
       headers: { Authorization: "Bearer " + secret, "Content-Type": "application/json" },
       body: JSON.stringify({
         tx_ref, amount, currency,
-        payment_options: currency === "NGN" ? "card,banktransfer" : "card",
         redirect_url: process.env.FLW_REDIRECT_URL || "https://davewebdeveloper.vercel.app/payment-success.html",
         customer: { email },
         customizations: { title: "David Wix Courses", description: items.map(item => names[item]).join(" + "), logo: "https://davewebdeveloper.vercel.app/davewebdeveloperlogo.png" },
