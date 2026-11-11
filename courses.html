@@ -30,37 +30,74 @@
 <article class="course bundle"><div class="tag">BEST VALUE · BOTH COURSES</div><h2>Complete Learning Bundle</h2><p>Get both courses together and save $10 compared with buying them separately.</p><div class="price">$50 <small>USD · bundle price</small></div><button class="add" data-add="bundle">Add both courses — save $10</button></article>
 </section>
 <aside aria-label="Shopping cart"><h2>Your cart <span id="count">(0)</span></h2><div id="items" class="empty">Your cart is empty.</div><div class="total"><span>Total</span><span id="total">$0.00</span></div>
-<label for="currency">Choose your payment currency</label><select id="currency"><option value="NGN">Nigerian Naira (NGN ₦)</option><option value="USD">US Dollar (USD $)</option><option value="EUR">Euro (EUR €)</option><option value="GBP">British Pound (GBP £)</option><option value="AUD" disabled>Australian Dollar (AUD) — Coming soon</option></select>
-<div class="note" id="rate-note">Loading current conversion rate…</div>
+<label for="currency">Choose your payment currency</label><select id="currency" aria-label="Select currency"><option value="USD" selected>USD — US Dollar (default)</option><option value="NGN">NGN — Nigerian Naira</option><option value="EUR">EUR — Euro</option><option value="GBP">GBP — British Pound</option><option value="AUD">AUD — Australian Dollar (contact to arrange)</option></select>
+<div class="note" id="rate-note">USD prices are shown by default.</div><a class="checkout" id="contact-payment" href="/#contact" style="display:block;text-align:center;text-decoration:none;background:transparent;color:var(--accent);border:1px solid var(--accent);margin-top:12px">Can’t see your currency or want to pay with crypto? Contact me</a>
 <label for="email">Email for your purchase receipt</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com">
 <button class="checkout" id="checkout" disabled>Continue to secure checkout</button><div class="status" id="status" role="status" aria-live="polite"></div>
 <p class="note">The converted amount is confirmed by the server when checkout is created. Flutterwave processes your payment. NGN checkout requests card and bank-transfer options; availability depends on your account settings.</p></aside>
 </main><footer>© <span id="year"></span> David Wix · Web Developer & Designer</footer></div>
 <script>
 const prices={frontend:25,"3d":35,bundle:50},names={frontend:"Front-End Web Development for Beginners","3d":"3D Website Design & Client Acquisition",bundle:"Complete Learning Bundle (both courses)"};
-let cart=[],currency="NGN",rates={},rateUpdated="";
+let cart=[],currency="USD",rates={USD:1},rateUpdated="";
 const items=document.querySelector("#items"),total=document.querySelector("#total"),count=document.querySelector("#count"),checkout=document.querySelector("#checkout"),status=document.querySelector("#status"),currencySelect=document.querySelector("#currency"),rateNote=document.querySelector("#rate-note");
 const sum=()=>cart.reduce((s,k)=>s+prices[k],0);
-const currencyLocales={NGN:"en-NG",USD:"en-US",EUR:"de-DE",GBP:"en-GB"};\nconst money=n=>new Intl.NumberFormat(currencyLocales[currency]||"en-US",{style:"currency",currency,maximumFractionDigits:currency==="NGN"?0:2}).format(n);
+const locales={USD:"en-US",NGN:"en-NG",EUR:"de-DE",GBP:"en-GB",AUD:"en-AU"};
+const money=n=>new Intl.NumberFormat(locales[currency]||"en-US",{style:"currency",currency,maximumFractionDigits:currency==="NGN"?0:2}).format(n);
 function render(){
  count.textContent="("+cart.length+")";
  if(!cart.length){items.className="empty";items.textContent="Your cart is empty."}
- else{items.className="";items.replaceChildren();cart.forEach((key,i)=>{const row=document.createElement("div");row.className="cart-line";const title=document.createElement("span");title.textContent=names[key];const right=document.createElement("span");right.textContent="$"+prices[key].toFixed(2);const remove=document.createElement("button");remove.className="remove";remove.textContent="Remove";remove.addEventListener("click",()=>{cart.splice(i,1);render()});right.append(" ");right.append(remove);row.append(title,right);items.append(row)})}
- total.textContent=rate?money(currency==="NGN"?Math.round(sum()*rate):sum()):"—";
- checkout.disabled=!cart.length||!rate;
+ else{
+  items.className="";items.replaceChildren();
+  cart.forEach((key,i)=>{
+   const row=document.createElement("div");row.className="cart-line";
+   const title=document.createElement("span");title.textContent=names[key];
+   const right=document.createElement("span");right.textContent="$"+prices[key].toFixed(2);
+   const remove=document.createElement("button");remove.className="remove";remove.type="button";remove.textContent="Remove";
+   remove.addEventListener("click",()=>{cart.splice(i,1);render()});
+   right.append(" ",remove);row.append(title,right);items.append(row);
+  });
+ }
+ const rate=Number(rates[currency]);
+ total.textContent=Number.isFinite(rate)&&rate>0?money(currency==="NGN"?Math.round(sum()*rate):sum()*rate):"—";
+ checkout.disabled=!cart.length||!Number.isFinite(rate)||rate<=0||currency==="AUD";
+ if(currency==="AUD")status.textContent="AUD checkout is not currently enabled. Use the contact button to arrange payment.";
 }
-async function loadRate(){
- checkout.disabled=true;rateNote.textContent="Refreshing exchange rates…";
- try{const r=await fetch("/api/currency-rates");const data=await r.json();if(!r.ok||!data.rates?.NGN||!data.rates?.USD||!data.rates?.EUR||!data.rates?.GBP)throw new Error(data.error||"Exchange rates unavailable.");rates=data.rates;rateUpdated=data.updated||"";const rvalue=Number(rates[currency]);rateNote.textContent=currency==="USD"?"USD course prices apply.": "Indicative rate: 1 USD = "+new Intl.NumberFormat("en-US",{style:"currency",currency,maximumFractionDigits:4}).format(rvalue)+(rateUpdated?" · "+rateUpdated:"")+". Final amount is confirmed at checkout.";render()}
- catch(e){rates={};rateNote.textContent="Could not load exchange rates. Please refresh and try again.";render()}
+async function loadRates(){
+ rateNote.textContent="Loading current conversion rates…";
+ try{
+  const response=await fetch("/api/currency-rates",{cache:"no-store"}),data=await response.json();
+  if(!response.ok||!data.rates||!["NGN","EUR","GBP","AUD"].every(k=>Number(data.rates[k])>0))throw new Error(data.error||"Rates unavailable");
+  rates={...data.rates,USD:1};rateUpdated=data.updated||"";
+  if(currency==="USD")rateNote.textContent="Select currency to see an indicative conversion. Course prices are set in USD.";
+  else rateNote.textContent="Indicative rate: 1 USD = "+moneyRate(Number(rates[currency]))+(rateUpdated?" · Updated "+rateUpdated:"")+". Your final amount is confirmed at checkout.";
+ }catch(error){rates={USD:1};rateNote.textContent="Live conversion rates are temporarily unavailable. You can still pay in USD."}
+ render();
 }
-document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.add;cart=k==="bundle"?["bundle"]:[...cart.filter(x=>x!=="bundle"&&x!==k),k];render();status.textContent="Added to cart."}));
-currencySelect.addEventListener("change",()=>{currency=currencySelect.value;loadRate()});
-checkout.addEventListener("click",async()=>{
- const email=document.querySelector("#email").value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status.textContent="Enter a valid email address to continue.";return}
- status.textContent="Preparing secure checkout…";checkout.disabled=true;
- try{const response=await fetch("/api/initialize-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,items:cart,currency})});const data=await response.json();if(!response.ok||!data.checkout_url)throw new Error(data.error||"Checkout could not be started.");window.location.assign(data.checkout_url)}
- catch(error){status.textContent=error.message||"Something went wrong. Please try again.";checkout.disabled=false}
+function moneyRate(value){return new Intl.NumberFormat(locales[currency]||"en-US",{style:"currency",currency,maximumFractionDigits:4}).format(value)}
+document.querySelectorAll("[data-add]").forEach(button=>button.addEventListener("click",()=>{
+ const key=button.dataset.add;
+ if(key==="bundle")cart=["bundle"];
+ else{cart=cart.filter(item=>item!=="bundle"&&item!==key);cart.push(key)}
+ status.textContent=names[key]+" added to cart.";render();
+}));
+currencySelect.addEventListener("change",()=>{
+ currency=currencySelect.value;
+ if(currency==="AUD"){rateNote.textContent="AUD is shown as an indicative conversion only; checkout is not enabled for AUD yet. Please contact me to arrange payment.";status.textContent="For AUD or another currency, use the contact button."}
+ else if(currency==="USD"){rateNote.textContent="USD selected. Original course prices apply.";status.textContent=""}
+ else{const rate=Number(rates[currency]);rateNote.textContent=rate>0?"Indicative rate: 1 USD = "+moneyRate(rate)+(rateUpdated?" · Updated "+rateUpdated:"")+". Final amount is confirmed at checkout.":"Loading conversion rate…";status.textContent=""}
+ render();
 });
-document.querySelector("#year").textContent=new Date().getFullYear();render();loadRate();
+checkout.addEventListener("click",async()=>{
+ const email=document.querySelector("#email").value.trim();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status.textContent="Enter a valid email address to continue.";return}
+ status.textContent="Preparing secure checkout…";checkout.disabled=true;
+ try{
+  const response=await fetch("/api/initialize-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,items:cart,currency})});
+  const data=await response.json();
+  if(!response.ok||!data.checkout_url)throw new Error(data.error||"Checkout could not be started.");
+  window.location.assign(data.checkout_url);
+ }catch(error){status.textContent=error.message||"Something went wrong. Please try again.";render()}
+});
+document.querySelector("#year").textContent=new Date().getFullYear();
+render();loadRates();
 </script></body></html>
