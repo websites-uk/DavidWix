@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#090909"><title>Payment status | David Wix</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090909;color:#f7f7f4;font:16px/1.6 Arial,sans-serif}.card{width:min(520px,88%);padding:36px;border:1px solid #333;background:#121212}h1{font-size:32px;line-height:1.1}.muted{color:#aaa}.status{color:#d8ff4f}.link{display:inline-block;margin-top:18px;padding:12px 18px;background:#d8ff4f;color:#090909;text-decoration:none;font-weight:bold}</style></head>
+<body><main class="card"><p class="status">DAVID WIX · COURSE CHECKOUT</p><h1 id="title">Checking your payment…</h1><p id="message" class="muted">Please wait while we confirm the transaction with Flutterwave.</p><a class="link" href="/courses.html">Back to courses</a></main>
+<script>
+(async()=>{
+ const params=new URLSearchParams(location.search);
+ const id=params.get("transaction_id");
+ const title=document.querySelector("#title"),message=document.querySelector("#message");
+ if(!id){title.textContent="Payment not confirmed";message.textContent="No transaction reference was provided. If you completed payment, contact support with your Flutterwave transaction reference.";return}
+ try{
+  const response=await fetch("/api/verify-payment?transaction_id="+encodeURIComponent(id));
+  const data=await response.json();
+  if(!response.ok||!data.paid)throw new Error(data.error||"Payment could not be verified.");
+  title.textContent="Payment verified";
+  message.textContent="Flutterwave confirms a successful payment of $"+Number(data.amount).toFixed(2)+". Your course download access is not yet activated; please contact David Wix to receive the course files.";
+ }catch(error){title.textContent="Payment not confirmed";message.textContent=error.message+" If you were charged, please keep your Flutterwave receipt and contact support."}
+})();
+</script></body></html>
