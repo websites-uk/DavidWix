@@ -1,4 +1,4 @@
-import { handleUpload } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
 import { timingSafeEqual } from "node:crypto";
 
 const FILES = new Set([
@@ -19,37 +19,28 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = req.body || {};
-    const pathname = typeof body.pathname === "string" ? body.pathname : "";
-    const clientPayload = typeof body.payload === "string" ? JSON.parse(body.payload) : {};
-    if (!FILES.has(pathname) || !safeEqual(clientPayload.password, process.env.COURSE_UPLOAD_PASSWORD)) {
+    const { pathname, password, fileBase64 } = req.body || {};
+    if (!FILES.has(pathname) || !safeEqual(password, process.env.COURSE_UPLOAD_PASSWORD)) {
       return res.status(401).json({ error: "Not authorized to upload this file." });
     }
+    if (typeof fileBase64 !== "string" || fileBase64.length > 3_000_000) {
+      return res.status(413).json({ error: "Invalid file or file is too large." });
+    }
+    const buffer = Buffer.from(fileBase64, "base64");
+    if (!buffer.length || buffer.length > 2 * 1024 * 1024 ||
+        buffer.subarray(0, 5).toString("ascii") !== "%PDF-") {
+      return res.status(400).json({ error: "The selected file is not a valid PDF or exceeds 2 MB." });
+    }
 
-    const jsonResponse = await handleUpload({
-      body,
-      request: req,
-      onBeforeGenerateToken: async (requestedPath) => {
-        if (!FILES.has(requestedPath)) throw new Error("This course file is not allowed.");
-        return {
-          access: "private",
-          addRandomSuffix: false,
-          allowedContentTypes: ["application/pdf"],
-          maximumSizeInBytes: 8 * 1024 * 1024,
-          tokenPayload: JSON.stringify({ courseFile: requestedPath })
-        };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        const data = JSON.parse(tokenPayload || "{}");
-        if (!FILES.has(data.courseFile) || blob.pathname !== data.courseFile || blob.contentType !== "application/pdf") {
-          throw new Error("Uploaded course file failed validation.");
-        }
-        console.info("Private course PDF uploaded:", blob.pathname);
-      }
+    const blob = await put(pathname, buffer, {
+      access: "private",
+      addRandomSuffix: false,
+      contentType: "application/pdf",
+      token: process.env.BLOB_READ_WRITE_TOKEN
     });
-    return res.status(200).json(jsonResponse);
+    return res.status(200).json({ success: true, pathname: blob.pathname });
   } catch (error) {
     console.error("Course upload error:", error?.message || "Unknown error");
-    return res.status(400).json({ error: "Upload could not be completed. Check the selected PDF and try again." });
+    return res.status(500).json({ error: "Upload failed. Please try again." });
   }
 }
