@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   const secret = process.env.FLW_SECRET_KEY;
   if (!secret) return res.status(503).json({ error: "Checkout is not configured yet." });
-  const { email, items, currency = "NGN" } = req.body || {};
+  const { email, items, currency = "USD" } = req.body || {};
   if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !Array.isArray(items) || !items.length || items.length > 2) {
     return res.status(400).json({ error: "Please provide a valid email and course selection." });
   }
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       const rateData = await rateResponse.json();
       fxRate = Number(rateData?.rates?.[currency]);
       if (!rateResponse.ok || rateData?.result !== "success" || !Number.isFinite(fxRate) || fxRate <= 0) {
-        return res.status(503).json({ error: "The Naira conversion rate is temporarily unavailable. Please try again." });
+        return res.status(503).json({ error: "The selected currency conversion rate is temporarily unavailable. Please try again." });
       }
       amount = currency === "NGN" ? Math.round(baseAmount * fxRate) : Math.round(baseAmount * fxRate * 100) / 100;
     }
