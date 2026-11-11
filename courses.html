@@ -30,7 +30,7 @@
 <article class="course bundle"><div class="tag">BEST VALUE · BOTH COURSES</div><h2>Complete Learning Bundle</h2><p>Get both courses together and save $10 compared with buying them separately.</p><div class="price">$50 <small>USD · bundle price</small></div><button class="add" data-add="bundle">Add both courses — save $10</button></article>
 </section>
 <aside aria-label="Shopping cart"><h2>Your cart <span id="count">(0)</span></h2><div id="items" class="empty">Your cart is empty.</div><div class="total"><span>Total</span><span id="total">$0.00</span></div>
-<label for="currency">Choose your payment currency</label><select id="currency"><option value="NGN">Nigerian Naira (NGN ₦)</option><option value="USD">US Dollar (USD $)</option></select>
+<label for="currency">Choose your payment currency</label><select id="currency"><option value="NGN">Nigerian Naira (NGN ₦)</option><option value="USD">US Dollar (USD $)</option><option value="EUR">Euro (EUR €)</option><option value="GBP">British Pound (GBP £)</option><option value="AUD" disabled>Australian Dollar (AUD) — Coming soon</option></select>
 <div class="note" id="rate-note">Loading current conversion rate…</div>
 <label for="email">Email for your purchase receipt</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com">
 <button class="checkout" id="checkout" disabled>Continue to secure checkout</button><div class="status" id="status" role="status" aria-live="polite"></div>
@@ -38,10 +38,10 @@
 </main><footer>© <span id="year"></span> David Wix · Web Developer & Designer</footer></div>
 <script>
 const prices={frontend:25,"3d":35,bundle:50},names={frontend:"Front-End Web Development for Beginners","3d":"3D Website Design & Client Acquisition",bundle:"Complete Learning Bundle (both courses)"};
-let cart=[],currency="NGN",rate=0,rateUpdated="";
+let cart=[],currency="NGN",rates={},rateUpdated="";
 const items=document.querySelector("#items"),total=document.querySelector("#total"),count=document.querySelector("#count"),checkout=document.querySelector("#checkout"),status=document.querySelector("#status"),currencySelect=document.querySelector("#currency"),rateNote=document.querySelector("#rate-note");
 const sum=()=>cart.reduce((s,k)=>s+prices[k],0);
-const money=n=>currency==="NGN"?new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:2}).format(n):new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(n);
+const currencyLocales={NGN:"en-NG",USD:"en-US",EUR:"de-DE",GBP:"en-GB"};\nconst money=n=>new Intl.NumberFormat(currencyLocales[currency]||"en-US",{style:"currency",currency,maximumFractionDigits:currency==="NGN"?0:2}).format(n);
 function render(){
  count.textContent="("+cart.length+")";
  if(!cart.length){items.className="empty";items.textContent="Your cart is empty."}
@@ -50,9 +50,9 @@ function render(){
  checkout.disabled=!cart.length||!rate;
 }
 async function loadRate(){
- checkout.disabled=true;rateNote.textContent="Refreshing exchange rate…";
- try{const r=await fetch("/api/currency-rates");const data=await r.json();if(!r.ok||!data.rates?.NGN)throw new Error(data.error||"Exchange rate unavailable.");rate=Number(data.rates.NGN);rateUpdated=data.updated||"";rateNote.textContent=currency==="NGN"?"Live indicative rate: 1 USD = ₦"+rate.toLocaleString("en-NG",{maximumFractionDigits:2})+(rateUpdated?" · "+rateUpdated:""):"USD checkout selected. The USD course prices apply.";render()}
- catch(e){rate=0;rateNote.textContent="Could not load the conversion rate. Please refresh and try again.";render()}
+ checkout.disabled=true;rateNote.textContent="Refreshing exchange rates…";
+ try{const r=await fetch("/api/currency-rates");const data=await r.json();if(!r.ok||!data.rates?.NGN||!data.rates?.USD||!data.rates?.EUR||!data.rates?.GBP)throw new Error(data.error||"Exchange rates unavailable.");rates=data.rates;rateUpdated=data.updated||"";const rvalue=Number(rates[currency]);rateNote.textContent=currency==="USD"?"USD course prices apply.": "Indicative rate: 1 USD = "+new Intl.NumberFormat("en-US",{style:"currency",currency,maximumFractionDigits:4}).format(rvalue)+(rateUpdated?" · "+rateUpdated:"")+". Final amount is confirmed at checkout.";render()}
+ catch(e){rates={};rateNote.textContent="Could not load exchange rates. Please refresh and try again.";render()}
 }
 document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.add;cart=k==="bundle"?["bundle"]:[...cart.filter(x=>x!=="bundle"&&x!==k),k];render();status.textContent="Added to cart."}));
 currencySelect.addEventListener("change",()=>{currency=currencySelect.value;loadRate()});
