@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/courses.html",
+      "destination": "/courses",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/courses",
+      "destination": "/courses.html"
+    }
+  ]
+}
