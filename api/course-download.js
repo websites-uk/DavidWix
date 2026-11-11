@@ -1,4 +1,5 @@
 import { get } from "@vercel/blob";
+import { Readable } from "node:stream";
 import { getCourseFile, readDownloadToken, verifyFlutterwaveTransaction } from "./_lib/course-access.js";
 
 export default async function handler(req, res) {
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
     res.setHeader("Content-Disposition", 'attachment; filename="' + pathname + '"');
     res.setHeader("Cache-Control", "private, no-store, max-age=0");
     res.setHeader("X-Content-Type-Options", "nosniff");
-    return result.stream.pipe(res);
+    return Readable.fromWeb(result.stream).pipe(res);
   } catch (error) {
     console.error("Course download denied:", error?.message || "Unknown server error");
     return res.status(403).json({ error: error?.message || "Unable to release this course file." });
