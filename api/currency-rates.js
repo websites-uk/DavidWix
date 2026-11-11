@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   try {
     const response = await fetch("https://open.er-api.com/v6/latest/USD");
     const data = await response.json();
-    const rates = { NGN: Number(data?.rates?.NGN), USD: 1, EUR: Number(data?.rates?.EUR), GBP: Number(data?.rates?.GBP), AUD: Number(data?.rates?.AUD) };
+    const rates = { NGN: Number(data?.rates?.NGN), USD: 1, EUR: Number(data?.rates?.EUR), GBP: Number(data?.rates?.GBP), AED: Number(data?.rates?.AED) };
     if (!response.ok || data?.result !== "success" || Object.entries(rates).some(([code, value]) => code !== "USD" && (!Number.isFinite(value) || value <= 0))) {
       return res.status(503).json({ error: "Exchange rate is temporarily unavailable." });
     }
