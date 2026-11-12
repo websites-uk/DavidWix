@@ -25,7 +25,7 @@ export async function verifyFlutterwaveTransaction(transactionId, email) {
   const secret = process.env.FLW_SECRET_KEY?.trim();
   if (!secret) throw new Error("Payment verification is not configured.");
   if (!/^\d+$/.test(String(transactionId || ""))) throw new Error("Missing or invalid transaction ID.");
-  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(email)) throw new Error("Enter the email address used at checkout.");
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter the email address used at checkout.");
 
   const response = await fetch("https://api.flutterwave.com/v3/transactions/" + encodeURIComponent(transactionId) + "/verify", {
     headers: { Authorization: "Bearer " + secret, Accept: "application/json" }
@@ -33,11 +33,15 @@ export async function verifyFlutterwaveTransaction(transactionId, email) {
   const result = await response.json().catch(() => ({}));
   const payment = result?.data;
   const meta = payment?.meta || {};
-  const items = normalizeItems(meta.course_items);
+  let metaItems = meta.course_items;
+  if (typeof metaItems === "string") {
+    try { metaItems = JSON.parse(metaItems); } catch { metaItems = null; }
+  }
+  const items = normalizeItems(metaItems);
   const baseAmount = items ? expectedBaseAmount(items) : NaN;
   const expectedAmount = Number(meta.expected_amount);
   const currency = meta.currency;
-  const supportedCurrencies = ["NGN", "USD", "EUR", "GBP"];
+  const supportedCurrencies = ["NGN", "USD", "EUR", "GBP", "AED"];
   const sameEmail = String(payment?.customer?.email || "").trim().toLowerCase() === email.trim().toLowerCase();
   if (!response.ok || result.status !== "success" || payment?.status !== "successful" ||
       !sameEmail || typeof payment?.tx_ref !== "string" || !payment.tx_ref.startsWith("DW-") ||
