@@ -58,7 +58,7 @@ export default async function handler(req, res) {
           description: items.map(item => names[item]).join(" + "),
           logo: "https://davewebdeveloper.vercel.app/davewebdeveloperlogo.png"
         },
-        meta: { course_items: items, base_amount_usd: baseAmount, expected_amount: amount, currency, fx_rate: fxRate }
+        meta: { course_items: JSON.stringify(items), base_amount_usd: String(baseAmount), expected_amount: String(amount), currency: String(currency), fx_rate: String(fxRate) }
       })
     });
 
