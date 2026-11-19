@@ -397,3 +397,8 @@ footer{max-width:var(--max);margin:auto;padding:28px 5vw;display:grid;grid-templ
 
 /* Make the blue DW hero orbit more visible */
 .dw-object:before{border:2px solid rgba(47,91,255,.9);box-shadow:0 0 14px rgba(47,91,255,.28),inset 0 0 8px rgba(47,91,255,.12)}
+
+
+/* Improve readability of the project collection labels */
+.category-kicker{font-size:12px;font-weight:600;letter-spacing:.17em;color:#7f9aff;text-shadow:0 0 12px rgba(47,91,255,.18)}
+@media(max-width:600px){.category-kicker{font-size:11px;letter-spacing:.14em}}
