@@ -400,5 +400,5 @@ footer{max-width:var(--max);margin:auto;padding:28px 5vw;display:grid;grid-templ
 
 
 /* Improve readability of the project collection labels */
-.category-kicker{font-size:12px;font-weight:600;letter-spacing:.17em;color:#7f9aff;text-shadow:0 0 12px rgba(47,91,255,.18)}
+.category-kicker{font-size:12px;font-weight:600;letter-spacing:.17em;color:var(--accent);text-shadow:0 0 12px rgba(47,91,255,.18)}
 @media(max-width:600px){.category-kicker{font-size:11px;letter-spacing:.14em}}
