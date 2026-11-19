@@ -393,3 +393,7 @@ footer{max-width:var(--max);margin:auto;padding:28px 5vw;display:grid;grid-templ
 .icon-youtube-logo i{font-size:46px;color:#fff;text-shadow:0 3px 0 rgba(100,0,0,.4),0 0 20px rgba(255,80,80,.5)}
 @keyframes brandLogoFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
 @media(prefers-reduced-motion:reduce){.brand-logo-icon{animation:none}}
+
+
+/* Make the blue DW hero orbit more visible */
+.dw-object:before{border:2px solid rgba(47,91,255,.9);box-shadow:0 0 14px rgba(47,91,255,.28),inset 0 0 8px rgba(47,91,255,.12)}
