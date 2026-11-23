@@ -429,3 +429,10 @@ footer{max-width:var(--max);margin:auto;padding:28px 5vw;display:grid;grid-templ
   .growth-note>span{font-size:11px;letter-spacing:.14em}
   .project-info a{min-height:42px;padding:0 14px}
 }
+
+
+/* Keep the WhatsApp brand mark crisp and visually strong without changing its size. */
+.contact-links .whatsapp-contact i{
+  -webkit-text-stroke:.55px currentColor;
+  text-shadow:0 0 .65px currentColor;
+}
