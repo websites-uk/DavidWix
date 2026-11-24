@@ -1,9 +1,11 @@
 import { get } from "@vercel/blob";
 import { Readable } from "node:stream";
 import { getCourseFile, readDownloadToken, verifyFlutterwaveTransaction } from "./_lib/course-access.js";
+import { rateLimit } from "./_lib/rate-limit.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  if (!rateLimit(req, res, { key: "course-download", limit: 15, windowMs: 10 * 60 * 1000 })) return;
   try {
     if (!process.env.BLOB_READ_WRITE_TOKEN) return res.status(503).json({ error: "Private course storage is not configured." });
     const course = String(req.query.course || "");
