@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#0a0a0a"/><text x="5" y="45" font-family="Arial,Helvetica,sans-serif" font-size="37" font-weight="800" fill="#2f5bff">D</text><text x="29" y="44" font-family="Arial,Helvetica,sans-serif" font-size="32" font-weight="800" fill="#ffffff">W</text></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>David Wix</title>
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1700b8"/>
+      <stop offset=".48" stop-color="#36b8ff"/>
+      <stop offset="1" stop-color="#1800b5"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#ring)" stroke-width="66"/>
+  <path fill="#2448ff" d="M92 118h164c84 0 145 48 165 119-44-42-104-60-173-60h-52c-44 0-82-23-104-59Z"/>
+  <path fill="#2448ff" d="M335 201c48 17 80 48 82 91-5 77-67 132-146 132H151V253h6c37 0 68 30 68 68v15h45c61 0 95-42 95-98 0-13-8-28-30-37Z"/>
+</svg>
