@@ -1,10 +1,13 @@
+import { rateLimit } from "./_lib/rate-limit.js";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (!rateLimit(req, res, { key: "checkout", limit: 8, windowMs: 10 * 60 * 1000 })) return;
   const secret = process.env.FLW_SECRET_KEY?.trim();
   if (!secret) return res.status(503).json({ error: "Checkout is not configured yet." });
 
   const { email, items, currency = "USD" } = req.body || {};
-  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !Array.isArray(items) || !items.length || items.length > 2) {
+  if (typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !Array.isArray(items) || !items.length || items.length > 2) {
     return res.status(400).json({ error: "Please provide a valid email and course selection." });
   }
   if (!["NGN", "USD", "EUR", "GBP", "AED"].includes(currency)) {
@@ -64,22 +67,13 @@ export default async function handler(req, res) {
 
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result.status !== "success" || !result.data?.link) {
-      const providerMessage = typeof result.message === "string" ? result.message : "No explanatory message returned";
-      const providerCode = typeof result.code === "string" || typeof result.code === "number" ? String(result.code) : "";
       console.error("Flutterwave checkout rejected", {
         httpStatus: response.status,
         providerStatus: result.status || "unknown",
-        providerCode,
-        providerMessage,
+        providerCode: typeof result.code === "string" || typeof result.code === "number" ? String(result.code) : "",
         currency
       });
-      return res.status(502).json({
-        error: "Flutterwave rejected the checkout request.",
-        detail: providerMessage,
-        providerCode: providerCode || undefined,
-        currency,
-        httpStatus: response.status
-      });
+      return res.status(502).json({ error: "Flutterwave could not start checkout. Please try again." });
     }
 
     return res.status(200).json({ checkout_url: result.data.link, tx_ref, amount, currency });
